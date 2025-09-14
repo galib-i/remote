@@ -16,8 +16,6 @@ func openBrowser(url string) {
 
 func main() {
 	r := router.Init()
-
 	go openBrowser("http://localhost:8080")
-
 	r.Run(":8080")
 }
