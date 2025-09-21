@@ -15,6 +15,7 @@ func Init() *gin.Engine {
 	r.POST("/volume-down", controller.VolumeDown)
 	r.POST("/mute-volume", controller.MuteVolume)
 	r.POST("/unmute-volume", controller.UnmuteVolume)
+	r.POST("/move-mouse", controller.MoveMouse)
 
 	return r
 }

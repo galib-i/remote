@@ -17,6 +17,20 @@
         margin-top: 20px;
         color: green;
       }
+      #coordinates {
+        position: fixed;
+        bottom: 10px;
+        right: 10px;
+        padding: 10px;
+        background-color: #333;
+        color: #fff;
+        border-radius: 5px;
+      }
+      canvas {
+        border: 1px solid black;
+        width: 560px;
+        height: 360px;
+      }
     </style>
   </head>
   <body>
@@ -26,7 +40,7 @@
     <button id="volumeDownBtn">Volume Down</button>
     <button id="muteVolumeBtn">Mute</button>
     <button id="unmuteVolumeBtn">Unmute</button>
-
+    <canvas id="canvas" width="560" height="360"></canvas>
     <script src="/js/app.js"></script>
   </body>
 </html>
