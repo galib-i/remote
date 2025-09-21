@@ -1,20 +1,19 @@
 package controller
 
 import (
-	"fmt"
 	"net/http"
 	"remote/internal/service"
 
 	"github.com/gin-gonic/gin"
 )
 
-type MouseMoveRequest struct {
+type CursorMoveRequest struct {
 	X float64 `json:"deltaX"`
 	Y float64 `json:"deltaY"`
 }
 
-func MoveMouse(c *gin.Context) {
-	var req MouseMoveRequest
+func MoveCursor(c *gin.Context) {
+	var req CursorMoveRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -29,11 +28,10 @@ func MoveMouse(c *gin.Context) {
 	newX := currentX + req.X
 	newY := currentY + req.Y
 
-	err = service.MoveMouse(newX, newY)
-	if err != nil {
+	if err := service.MoveCursor(newX, newY); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"message": "Mouse moved"})
-	fmt.Println(newX, newY)
+
+	c.JSON(http.StatusOK, gin.H{"success": true})
 }

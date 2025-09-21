@@ -4,56 +4,38 @@ import (
 	"github.com/itchyny/volume-go"
 )
 
-func VolumeUp() error {
+const volumeStep = 2
+
+func AdjustVolume(increase bool) error {
 	vol, err := volume.GetVolume()
 	if err != nil {
 		return err
 	}
 
-	err = volume.SetVolume(vol + 2)
-	if err != nil {
-		return err
+	adjustment := volumeStep
+	if !increase {
+		adjustment = -volumeStep
 	}
 
-	return nil
+	newVol := vol + adjustment
+	if newVol < 0 {
+		newVol = 0
+	} else if newVol > 100 {
+		newVol = 100
+	}
+
+	return volume.SetVolume(newVol)
 }
 
-func VolumeDown() error {
-	vol, err := volume.GetVolume()
+func ToggleMute() error {
+	mute, err := volume.GetMuted()
 	if err != nil {
 		return err
 	}
 
-	err = volume.SetVolume(vol - 2)
-	if err != nil {
-		return err
+	if mute {
+		return volume.Unmute()
 	}
 
-	return nil
-}
-
-func MuteVolume() error {
-	status, err := volume.GetMuted()
-	if err != nil {
-		return err
-	}
-
-	if status != true {
-		volume.Mute()
-	}
-
-	return nil
-}
-
-func UnmuteVolume() error {
-	status, err := volume.GetMuted()
-	if err != nil {
-		return err
-	}
-
-	if status == true {
-		volume.Unmute()
-	}
-
-	return nil
+	return volume.Mute()
 }

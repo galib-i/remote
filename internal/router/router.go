@@ -11,11 +11,9 @@ func Init() *gin.Engine {
 
 	r.Static("/", "./web")
 
-	r.POST("/volume-up", controller.VolumeUp)
-	r.POST("/volume-down", controller.VolumeDown)
-	r.POST("/mute-volume", controller.MuteVolume)
-	r.POST("/unmute-volume", controller.UnmuteVolume)
-	r.POST("/move-mouse", controller.MoveMouse)
+	r.POST("/volume/:direction", controller.AdjustVolume) // :direction will be "up" or "down"
+	r.POST("/toggle-mute", controller.ToggleMute)
+	r.POST("/move-mouse", controller.MoveCursor)
 
 	return r
 }

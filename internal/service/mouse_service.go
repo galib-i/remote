@@ -26,7 +26,7 @@ func GetCursorPos() (float64, float64, error) {
 	return float64(pt.X), float64(pt.Y), nil
 }
 
-func MoveMouse(x, y float64) error {
+func MoveCursor(x, y float64) error {
 	ret, _, err := procSetCursorPos.Call(
 		uintptr(x),
 		uintptr(y),

@@ -1,63 +1,60 @@
-const volumeUpButton = document.getElementById("volumeUpBtn");
-const volumeDownButton = document.getElementById("volumeDownBtn");
-const muteVolumeButton = document.getElementById("muteVolumeBtn");
-const unmuteVolumeButton = document.getElementById("unmuteVolumeBtn");
+const post = (url, data = null) =>
+  fetch(url, {
+    method: "POST",
+    headers: data ? { "Content-Type": "application/json" } : undefined,
+    body: data ? JSON.stringify(data) : null,
+  }).catch(console.error);
 
-volumeUpButton.addEventListener("click", () => {
-  fetch("/volume-up", { method: "POST" }).catch((err) => console.error(err));
-});
+const BUTTON_ENDPOINTS = {
+  volumeUpBtn: "/volume/up",
+  volumeDownBtn: "/volume/down",
+  muteVolumeBtn: "/toggle-mute",
+};
 
-volumeDownButton.addEventListener("click", () => {
-  fetch("/volume-down", { method: "POST" }).catch((err) => console.error(err));
-});
+Object.entries(BUTTON_ENDPOINTS).forEach(([id, endpoint]) => {
+  const btn = document.getElementById(id);
 
-muteVolumeButton.addEventListener("click", () => {
-  fetch("/mute-volume", { method: "POST" }).catch((err) => console.error(err));
-});
-
-unmuteVolumeButton.addEventListener("click", () => {
-  fetch("/unmute-volume", { method: "POST" }).catch((err) =>
-    console.error(err)
-  );
-});
-
-let isMousepadActive = false;
-let oldX = 0;
-let oldY = 0;
-
-const canvas = document.getElementById("canvas");
-
-canvas.addEventListener("touchstart", (e) => {
-  isMousepadActive = true;
-  const touch = e.touches[0];
-  const rect = canvas.getBoundingClientRect();
-  oldX = touch.clientX - rect.left;
-  oldY = touch.clientY - rect.top;
-});
-
-canvas.addEventListener("touchmove", (e) => {
-  if (isMousepadActive) {
-    e.preventDefault();
-    const touch = e.touches[0];
-    const rect = canvas.getBoundingClientRect();
-    const x = touch.clientX - rect.left;
-    const y = touch.clientY - rect.top;
-
-    if (x >= 0 && y >= 0 && x <= rect.width && y <= rect.height) {
-      const deltaX = x - oldX;
-      const deltaY = y - oldY;
-
-      fetch("/move-mouse", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ deltaX, deltaY }),
-      }).catch((err) => console.error(err));
-      oldX = x;
-      oldY = y;
-    }
+  if (btn) {
+    btn.addEventListener("click", () => post(endpoint));
   }
 });
 
-canvas.addEventListener("touchend", () => {
-  isMousepadActive = false;
-});
+const canvas = document.getElementById("canvas");
+if (canvas) {
+  let isActive = false;
+  let lastPos = { x: 0, y: 0 };
+
+  const getTouchPos = (touch) => {
+    const rect = canvas.getBoundingClientRect();
+    return {
+      x: touch.clientX - rect.left,
+      y: touch.clientY - rect.top,
+      width: rect.width,
+      height: rect.height,
+    };
+  };
+
+  canvas.addEventListener("touchstart", (e) => {
+    isActive = true;
+    lastPos = getTouchPos(e.touches[0]);
+  });
+
+  canvas.addEventListener("touchmove", (e) => {
+    if (!isActive) return;
+    e.preventDefault();
+
+    const { x, y, width, height } = getTouchPos(e.touches[0]);
+    if (x < 0 || y < 0 || x > width || y > height) return;
+
+    post("/move-mouse", {
+      deltaX: x - lastPos.x,
+      deltaY: y - lastPos.y,
+    });
+
+    lastPos = { x, y };
+  });
+
+  canvas.addEventListener("touchend", () => {
+    isActive = false;
+  });
+}
