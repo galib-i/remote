@@ -11,9 +11,10 @@ func Init() *gin.Engine {
 
 	r.Static("/", "./web")
 
-	r.POST("/volume/:direction", controller.AdjustVolume) // :direction will be "up" or "down"
+	r.POST("/volume/:direction", controller.AdjustVolume) // :direction -> "up"/"down"
 	r.POST("/toggle-mute", controller.ToggleMute)
 	r.POST("/move-mouse", controller.MoveCursor)
+	r.POST("/click/:side", controller.Click) // :side -> "left"/"right"
 
 	return r
 }

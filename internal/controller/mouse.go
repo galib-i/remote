@@ -35,3 +35,15 @@ func MoveCursor(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"success": true})
 }
+
+func Click(c *gin.Context) {
+	side := c.Param("side")
+	leftClick := side == "left"
+
+	if err := service.Click(leftClick); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"success": true})
+}
