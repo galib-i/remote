@@ -3,15 +3,12 @@ package service
 import (
 	"fmt"
 	"unsafe"
-
-	"golang.org/x/sys/windows"
 )
 
 var (
-	user32           = windows.NewLazySystemDLL("user32.dll")
-	procSetCursorPos = user32.NewProc("SetCursorPos")
-	procGetCursorPos = user32.NewProc("GetCursorPos")
-	procMouseEvent   = user32.NewProc("mouse_event")
+	callSetCursorPos = newWinAPIHelper("SetCursorPos")
+	callGetCursorPos = newWinAPIHelper("GetCursorPos")
+	callMouseEvent   = newWinAPIHelper("mouse_event")
 )
 
 type POINT struct {
@@ -25,9 +22,13 @@ const (
 	MOUSEEVENTF_RIGHTUP   = 0x0010
 )
 
+func mouseEvent(event uintptr) error {
+	return callWinAPI(callMouseEvent, "mouse event failed", event, 0, 0, 0, 0)
+}
+
 func GetCursorPos() (float64, float64, error) {
 	var pt POINT
-	ret, _, err := procGetCursorPos.Call(uintptr(unsafe.Pointer(&pt)))
+	ret, _, err := callGetCursorPos(uintptr(unsafe.Pointer(&pt)))
 	if ret == 0 {
 		return 0, 0, fmt.Errorf("failed to get cursor position: %w", err)
 	}
@@ -36,15 +37,7 @@ func GetCursorPos() (float64, float64, error) {
 }
 
 func MoveCursor(x, y float64) error {
-	ret, _, err := procSetCursorPos.Call(
-		uintptr(x),
-		uintptr(y),
-	)
-	if ret == 0 {
-		return fmt.Errorf("failed to move cursor: %w", err)
-	}
-
-	return nil
+	return callWinAPI(callSetCursorPos, "failed to move cursor", uintptr(x), uintptr(y))
 }
 
 func Click(left bool) error {
@@ -58,15 +51,11 @@ func Click(left bool) error {
 		upEvent = MOUSEEVENTF_RIGHTUP
 	}
 
-	// Mouse button down
-	ret, _, err := procMouseEvent.Call(downEvent, 0, 0, 0, 0)
-	if ret == 0 {
+	if err := mouseEvent(downEvent); err != nil {
 		return fmt.Errorf("failed to press mouse button: %w", err)
 	}
 
-	// Mouse button up
-	ret, _, err = procMouseEvent.Call(upEvent, 0, 0, 0, 0)
-	if ret == 0 {
+	if err := mouseEvent(upEvent); err != nil {
 		return fmt.Errorf("failed to release mouse button: %w", err)
 	}
 

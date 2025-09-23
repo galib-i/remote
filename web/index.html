@@ -2,56 +2,157 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
     <title>Hello</title>
     <style>
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        height: 100vh;
+        overflow-x: hidden;
+      }
+
       body {
         font-family: Arial;
         text-align: center;
-        padding: 50px;
+        padding: 10px;
+        touch-action: manipulation;
+        user-select: none;
+        -webkit-user-select: none;
+        -webkit-touch-callout: none;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        min-height: 100vh;
       }
+
+      h1 {
+        font-size: clamp(1.2rem, 4vw, 2rem);
+        margin: 10px 0;
+      }
+
       button {
-        padding: 15px 30px;
-        font-size: 18px;
+        padding: clamp(8px, 2vw, 15px) clamp(15px, 4vw, 30px);
+        font-size: clamp(12px, 3vw, 18px);
+        margin: 5px;
+        min-height: 44px; /* Minimum touch target size */
+        min-width: 44px;
       }
+
       #state {
         margin-top: 20px;
         color: green;
       }
+
       #coordinates {
         position: fixed;
         bottom: 10px;
         right: 10px;
-        padding: 10px;
+        padding: 5px;
         background-color: #333;
         color: #fff;
         border-radius: 5px;
+        font-size: clamp(10px, 2vw, 12px);
       }
+
       canvas {
         border: 1px solid black;
-        width: 560px;
-        height: 360px;
+        max-width: 100%;
+        height: auto;
+        aspect-ratio: 560/360;
+        width: min(90vw, 560px);
       }
+
       #canvas {
         touch-action: manipulation;
         user-select: none;
         -webkit-user-select: none;
         -webkit-touch-callout: none;
       }
-      body {
-        touch-action: manipulation;
-        user-select: none;
-        -webkit-user-select: none;
+
+      #keyboardInput {
+        padding: clamp(5px, 2vw, 10px);
+        font-size: clamp(14px, 3vw, 16px);
+        border: 2px solid #333;
+        border-radius: 5px;
+        margin: 10px;
+        width: min(90vw, 300px);
+        max-width: 300px;
+      }
+
+      #keyboardContainer {
+        margin: 15px 0;
+      }
+
+      #keyboardContainer h3 {
+        font-size: clamp(1rem, 3vw, 1.2rem);
+        margin: 10px 0;
+      }
+
+      .button-container {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 5px;
+        margin: 10px 0;
+      }
+
+      /* Responsive breakpoints */
+      @media (max-width: 768px) {
+        body {
+          padding: 5px;
+        }
+
+        button {
+          font-size: 14px;
+          padding: 10px 15px;
+        }
+
+        canvas {
+          width: 95vw;
+        }
+      }
+
+      @media (max-width: 480px) {
+        h1 {
+          font-size: 1.3rem;
+        }
+
+        button {
+          font-size: 12px;
+          padding: 8px 12px;
+        }
       }
     </style>
   </head>
   <body>
     <h1>Press the Button</h1>
 
-    <button id="volumeUpBtn">Volume Up</button>
-    <button id="volumeDownBtn">Volume Down</button>
-    <button id="muteVolumeBtn">Mute</button>
-    <button id="LeftClickBtn">LClick</button>
-    <button id="RightClickBtn">RClick</button>
+    <div class="button-container">
+      <button id="volumeUpBtn">Volume Up</button>
+      <button id="volumeDownBtn">Volume Down</button>
+      <button id="muteVolumeBtn">Mute</button>
+      <button id="LeftClickBtn">LClick</button>
+      <button id="RightClickBtn">RClick</button>
+    </div>
+
+    <!-- Add keyboard input section -->
+    <div id="keyboardContainer">
+      <h3>Keyboard Input</h3>
+      <input
+        type="text"
+        id="keyboardInput"
+        placeholder="Type here to send keys..."
+      />
+    </div>
 
     <canvas id="canvas" width="560" height="360"></canvas>
     <script src="/js/app.js"></script>
