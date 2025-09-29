@@ -15,7 +15,7 @@ func Init() *gin.Engine {
 	r.POST("/toggle-mute", controller.ToggleMute)
 	r.POST("/move-cursor", controller.MoveCursor)
 	r.POST("/click/:side", controller.Click) // :side -> "left"/"right"
-	r.POST("/press-key/:key", controller.PressKey)
+	r.POST("/press-key", controller.PressKey)
 
 	return r
 }

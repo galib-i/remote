@@ -11,7 +11,6 @@ const BUTTON_ENDPOINTS = {
   muteVolumeBtn: "/toggle-mute",
   LeftClickBtn: "/click/left",
   RightClickBtn: "/click/right",
-  OpenKeyboardBtn: "/",
 };
 
 const DOUBLE_TAP_DELAY = 300; // milliseconds
@@ -29,30 +28,23 @@ const keyboardInput = document.getElementById("keyboardInput");
 const clearInputBtn = document.getElementById("clearInput");
 
 if (keyboardInput) {
-  keyboardInput.addEventListener("input", (e) => {
-    const inputValue = e.target.value;
-    const lastChar = inputValue.slice(-1).toLowerCase();
-
-    // Only send if it's a letter
-    if (lastChar.match(/[a-z]/)) {
-      post(`/press-key/${lastChar}`);
+  keyboardInput.addEventListener("keydown", (e) => {
+    // Handle special keys that don't produce a standard character input
+    if (e.key === "Enter") {
+      e.preventDefault(); // Prevent form submission or other default actions
+      post(`/press-key?text=enter`);
+    } else if (e.key === "Backspace") {
+      e.preventDefault();
+      post(`/press-key?text=backspace`);
     }
-
-    // Clear the input after sending
-    setTimeout(() => {
-      e.target.value = "";
-    }, 100);
   });
 
-  // Alternative: Send on keydown for immediate response
-  keyboardInput.addEventListener("keydown", (e) => {
-    const key = e.key.toLowerCase();
+  keyboardInput.addEventListener("input", (e) => {
+    const text = e.target.value;
+    const lastChar = text.slice(-1);
 
-    // Only send if it's a letter
-    if (key.match(/^[a-z]$/)) {
-      post(`/press-key/${key}`);
-      e.preventDefault(); // Prevent default to avoid duplicate sends
-    }
+    post(`/press-key?text=${encodeURIComponent(lastChar)}`);
+    e.target.value = "";
   });
 }
 

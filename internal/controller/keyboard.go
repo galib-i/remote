@@ -8,7 +8,7 @@ import (
 )
 
 func PressKey(c *gin.Context) {
-	key := c.Param("key")
+	key := c.Query("text")
 
 	handleServiceCall(c, func() error {
 		return service.PressKey(key)
