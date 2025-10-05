@@ -8,22 +8,21 @@
   </head>
   <body>
     <div class="button-container">
-      <button id="volumeUpBtn">Volume Up</button>
-      <button id="volumeDownBtn">Volume Down</button>
-      <button id="muteVolumeBtn">Mute</button>
+      <button id="volumeUpBtn">🔊</button>
+      <button id="volumeDownBtn">🔉</button>
+      <button id="muteVolumeBtn">🔇</button>
+      <div id="keyboardContainer">
+        <input type="text" id="keyboardInput" placeholder="⌨️" />
+      </div>
+    </div>
+
+    <canvas id="touchpad" width="560" height="360"></canvas>
+
+    <div class="touchpad-buttons">
       <button id="leftClickBtn">LClick</button>
       <button id="rightClickBtn">RClick</button>
     </div>
 
-    <div id="keyboardContainer">
-      <input
-        type="text"
-        id="keyboardInput"
-        placeholder="Type here to send keys..."
-      />
-    </div>
-
-    <canvas id="touchpad" width="560" height="360"></canvas>
     <script src="/js/app.js"></script>
   </body>
 </html>
