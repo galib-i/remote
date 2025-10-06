@@ -9,13 +9,21 @@ import (
 func Init() *gin.Engine {
 	r := gin.Default()
 
-	r.Static("/", "./web")
+	api := r.Group("/api")
+	{
+		api.GET("/qr", controller.ShowQR)
+		api.POST("/volume/:direction", controller.AdjustVolume) // :direction -> "up"/"down"
+		api.POST("/toggle-mute", controller.ToggleMute)
+		api.POST("/move-cursor", controller.MoveCursor)
+		api.POST("/click/:side", controller.Click) // :side -> "left"/"right"
+		api.POST("/press-key", controller.PressKey)
+	}
 
-	r.POST("/volume/:direction", controller.AdjustVolume) // :direction -> "up"/"down"
-	r.POST("/toggle-mute", controller.ToggleMute)
-	r.POST("/move-cursor", controller.MoveCursor)
-	r.POST("/click/:side", controller.Click) // :side -> "left"/"right"
-	r.POST("/press-key", controller.PressKey)
+	r.StaticFile("/", "./web/index.html")
+	r.StaticFile("/qr", "./web/qr.html")
+
+	r.Static("/css", "./web/css")
+	r.Static("/js", "./web/js")
 
 	return r
 }

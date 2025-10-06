@@ -6,11 +6,11 @@ const post = (url, data = null) =>
   }).catch(console.error);
 
 const BUTTON_ENDPOINTS = {
-  volumeUpBtn: "/volume/up",
-  volumeDownBtn: "/volume/down",
-  muteVolumeBtn: "/toggle-mute",
-  leftClickBtn: "/click/left",
-  rightClickBtn: "/click/right",
+  volumeUpBtn: "/api/volume/up",
+  volumeDownBtn: "/api/volume/down",
+  muteVolumeBtn: "/api/toggle-mute",
+  leftClickBtn: "/api/click/left",
+  rightClickBtn: "/api/click/right",
 };
 
 const DOUBLE_TAP_DELAY = 300; // milliseconds
@@ -38,10 +38,10 @@ Object.entries(BUTTON_ENDPOINTS).forEach(([id, endpoint]) => {
 keyboardInput.addEventListener("keydown", (e) => {
   if (e.key === "Enter") {
     e.preventDefault(); // Prevent form submission or other default actions
-    post(`/press-key?text=enter`);
+    post(`/api/press-key?text=enter`);
   } else if (e.key === "Backspace") {
     e.preventDefault();
-    post(`/press-key?text=backspace`);
+    post(`/api/press-key?text=backspace`);
   }
 });
 // Handle regular characters
@@ -55,7 +55,7 @@ keyboardInput.addEventListener("input", (e) => {
     lastChar.charCodeAt(0) >= 32 &&
     lastChar.charCodeAt(0) <= 126
   ) {
-    post(`/press-key?text=${encodeURIComponent(lastChar)}`);
+    post(`/api/press-key?text=${encodeURIComponent(lastChar)}`);
   }
 
   e.target.value = "";
@@ -88,7 +88,7 @@ touchpad.addEventListener("touchstart", (e) => {
 
   const currentTime = Date.now();
   if (currentTime - lastTapTime < DOUBLE_TAP_DELAY) {
-    post("/click/left");
+    post("/api/click/left");
     lastTapTime = 0;
   } else {
     lastTapTime = currentTime;
@@ -103,7 +103,7 @@ touchpad.addEventListener("touchmove", (e) => {
   const { x, y, width, height } = getTouchPos(e.touches[0]);
   if (x < 0 || y < 0 || x > width || y > height) return; // Ignore touches outside of bounds
 
-  post("/move-cursor", {
+  post("/api/move-cursor", {
     deltaX: x - lastTouchPos.x,
     deltaY: y - lastTouchPos.y,
   });
