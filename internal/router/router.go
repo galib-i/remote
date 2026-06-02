@@ -12,11 +12,7 @@ func Init() *gin.Engine {
 	api := r.Group("/api")
 	{
 		api.GET("/qr", controller.ShowQR)
-		api.POST("/volume/:direction", controller.AdjustVolume) // :direction -> "up"/"down"
-		api.POST("/toggle-mute", controller.ToggleMute)
-		api.POST("/move-cursor", controller.MoveCursor)
-		api.POST("/click/:side", controller.Click) // :side -> "left"/"right"
-		api.POST("/press-key", controller.PressKey)
+		api.GET("/ws", controller.Ws)
 	}
 
 	r.StaticFile("/", "./web/index.html")

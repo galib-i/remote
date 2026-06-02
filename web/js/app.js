@@ -1,16 +1,19 @@
-const post = (url, data = null) =>
-  fetch(url, {
-    method: "POST",
-    headers: data ? { "Content-Type": "application/json" } : undefined,
-    body: data ? JSON.stringify(data) : null,
-  }).catch(console.error);
-
-const BUTTON_ENDPOINTS = {
-  volumeUpBtn: "/api/volume/up",
-  volumeDownBtn: "/api/volume/down",
-  muteVolumeBtn: "/api/toggle-mute",
-  leftClickBtn: "/api/click/left",
-  rightClickBtn: "/api/click/right",
+const wsProtocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+const wsUrl = `${wsProtocol}//${window.location.host}/api/ws`;
+const socket = new WebSocket(wsUrl);
+const sendMessage = (payload) => {
+  if (socket.readyState === WebSocket.OPEN) {
+    socket.send(JSON.stringify(payload));
+  } else {
+    console.warn("WebSocket is not open. Message dropped:", payload);
+  }
+};
+const BUTTON_MESSAGES = {
+  volumeUpBtn: { action: "volume", direction: "up" },
+  volumeDownBtn: { action: "volume", direction: "down" },
+  muteVolumeBtn: { action: "toggle-mute" },
+  leftClickBtn: { action: "click", side: "left" },
+  rightClickBtn: { action: "click", side: "right" },
 };
 
 const DOUBLE_TAP_DELAY = 300; // milliseconds
@@ -18,52 +21,40 @@ const DOUBLE_TAP_DELAY = 300; // milliseconds
 const keyboardInput = document.getElementById("keyboardInput");
 const touchpad = document.getElementById("touchpad");
 
-// =============================================================================
-// BUTTON HANDLERS
-// =============================================================================
-
-Object.entries(BUTTON_ENDPOINTS).forEach(([id, endpoint]) => {
+Object.entries(BUTTON_MESSAGES).forEach(([id, messagePayload]) => {
   const btn = document.getElementById(id);
-
   if (btn) {
-    btn.addEventListener("click", () => post(endpoint));
+    btn.addEventListener("click", () => sendMessage(messagePayload));
   }
 });
-
-// =============================================================================
-// KEYBOARD HANDLERS
-// =============================================================================
 
 // Handle special keys that don't produce a character input (Enter, Backspace)
 keyboardInput.addEventListener("keydown", (e) => {
   if (e.key === "Enter") {
-    e.preventDefault(); // Prevent form submission or other default actions
-    post(`/api/press-key?text=enter`);
+    e.preventDefault();
+    sendMessage({ action: "press-key", text: "enter" });
   } else if (e.key === "Backspace") {
     e.preventDefault();
-    post(`/api/press-key?text=backspace`);
+    sendMessage({ action: "press-key", text: "backspace" });
   }
 });
+
 // Handle regular characters
 keyboardInput.addEventListener("input", (e) => {
   const text = e.target.value;
   const lastChar = text.slice(-1);
 
-  // Filter out emojis and complex Unicode characters
   if (
     lastChar.length === 1 &&
     lastChar.charCodeAt(0) >= 32 &&
     lastChar.charCodeAt(0) <= 126
   ) {
-    post(`/api/press-key?text=${encodeURIComponent(lastChar)}`);
+    sendMessage({ action: "press-key", text: lastChar });
   }
 
   e.target.value = "";
 });
 
-// =============================================================================
-// TOUCHPAD HANDLERS
-// =============================================================================
 
 let isTouchActive = false;
 let lastTouchPos = { x: 0, y: 0 };
@@ -88,7 +79,7 @@ touchpad.addEventListener("touchstart", (e) => {
 
   const currentTime = Date.now();
   if (currentTime - lastTapTime < DOUBLE_TAP_DELAY) {
-    post("/api/click/left");
+    sendMessage({ action: "click", side: "left" });
     lastTapTime = 0;
   } else {
     lastTapTime = currentTime;
@@ -103,14 +94,11 @@ touchpad.addEventListener("touchmove", (e) => {
   const { x, y, width, height } = getTouchPos(e.touches[0]);
   if (x < 0 || y < 0 || x > width || y > height) return; // Ignore touches outside of bounds
 
-  post("/api/move-cursor", {
+  sendMessage({
+    action: "move-cursor",
     deltaX: x - lastTouchPos.x,
     deltaY: y - lastTouchPos.y,
   });
 
   lastTouchPos = { x, y };
-});
-
-touchpad.addEventListener("touchend", () => {
-  isTouchActive = false;
 });
