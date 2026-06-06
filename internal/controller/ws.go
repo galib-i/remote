@@ -49,10 +49,7 @@ func Ws(c *gin.Context) {
 
 		switch msg.Action {
 		case "move-cursor":
-			currentX, currentY, err := service.GetCursorPos()
-			if err == nil {
-				_ = service.MoveCursor(currentX+msg.DeltaX, currentY+msg.DeltaY)
-			}
+			_ = service.MoveCursor(msg.DeltaX, msg.DeltaY)
 		case "click":
 			_ = service.Click(msg.Side == "left")
 		case "press-key":

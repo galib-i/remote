@@ -36,8 +36,13 @@ func GetCursorPos() (float64, float64, error) {
 	return float64(pt.X), float64(pt.Y), nil
 }
 
-func MoveCursor(x, y float64) error {
-	return callWinAPI(callSetCursorPos, "failed to move cursor", uintptr(x), uintptr(y))
+func MoveCursor(dx, dy float64) error {
+	currentX, currentY, err := GetCursorPos()
+	if err != nil {
+		return err
+	}
+
+	return callWinAPI(callSetCursorPos, "failed to move cursor", uintptr(currentX+dx), uintptr(currentY+dy))
 }
 
 func Click(left bool) error {

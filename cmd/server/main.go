@@ -11,6 +11,8 @@ func openBrowser(url string) {
 	switch runtime.GOOS {
 	case "windows":
 		exec.Command("rundll32", "url.dll,FileProtocolHandler", url).Start()
+	case "linux":
+		exec.Command("xdg-open", url).Start()
 	}
 }
 
