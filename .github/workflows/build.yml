@@ -1,10 +1,15 @@
 name: Build
 
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - main
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v6
 
@@ -14,13 +19,23 @@ jobs:
 
       - name: Compile Binaries
         run: |
+          mkdir -p dist
           GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o dist/remote-server-linux ./cmd/server
           GOOS=windows GOARCH=amd64 go build -ldflags="-s -w" -o dist/remote-server-windows.exe ./cmd/server
 
           cp start-remote.sh dist/
           cp start-remote.ps1 dist/
 
-      - uses: actions/upload-artifact@v7
+      - name: Create Release
+        uses: softprops/action-gh-release@v3
         with:
-          name: remote-server-builds
-          path: dist/
+          tag_name: latest
+          name: "Latest Automatic Build"
+          body: |
+            Latest update commit: ${{ github.sha }}
+          prerelease: true
+          files: |
+            dist/remote-server-linux
+            dist/remote-server-windows.exe
+            dist/start-remote.sh
+            dist/start-remote.ps1
