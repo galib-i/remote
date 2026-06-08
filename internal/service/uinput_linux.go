@@ -1,6 +1,7 @@
 package service
 
 import (
+	"fmt"
 	"os"
 	"syscall"
 	"unsafe"
@@ -30,6 +31,22 @@ type inputEvent struct {
 	Value      int32
 }
 
+func registerUinputDevice(f *os.File, deviceName string) error {
+	dev := uinputUserDev{}
+	copy(dev.Name[:], deviceName)
+	dev.ID.Bustype, dev.ID.Vendor, dev.ID.Product, dev.ID.Version = 0x06, 0x1234, 0x1234, 1
+
+	if _, err := f.Write((*[unsafe.Sizeof(dev)]byte)(unsafe.Pointer(&dev))[:]); err != nil {
+		return fmt.Errorf("failed to write virtual device to kernel: %w", err)
+	}
+
+	if err := uinputIoctl(f.Fd(), uiDevCreate, 0); err != nil {
+		return fmt.Errorf("failed to create uinput device: %w", err)
+	}
+
+	return nil
+}
+
 // uinputIoctl makes the syscall to configure the device
 func uinputIoctl(fd uintptr, req, arg uintptr) error {
 	_, _, err := syscall.Syscall(syscall.SYS_IOCTL, fd, req, arg)
@@ -40,7 +57,12 @@ func uinputIoctl(fd uintptr, req, arg uintptr) error {
 }
 
 // emitEvent writes the hardware action to the specific device file
-func emitEvent(f *os.File, typ, code uint16, val int32) {
+func emitEvent(f *os.File, typ, code uint16, val int32) error {
 	ev := inputEvent{Type: typ, Code: code, Value: val}
-	f.Write((*[unsafe.Sizeof(ev)]byte)(unsafe.Pointer(&ev))[:])
+
+	if _, err := f.Write((*[unsafe.Sizeof(ev)]byte)(unsafe.Pointer(&ev))[:]); err != nil {
+		return fmt.Errorf("hardware write failed: %w", err)
+	}
+
+	return nil
 }

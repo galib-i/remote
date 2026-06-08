@@ -26,7 +26,7 @@ func mouseEvent(event uintptr) error {
 	return callWinAPI(callMouseEvent, "mouse event failed", event, 0, 0, 0, 0)
 }
 
-func GetCursorPos() (float64, float64, error) {
+func getCursorPos() (float64, float64, error) {
 	var pt POINT
 	ret, _, err := callGetCursorPos(uintptr(unsafe.Pointer(&pt)))
 	if ret == 0 {
@@ -37,7 +37,7 @@ func GetCursorPos() (float64, float64, error) {
 }
 
 func MoveCursor(dx, dy float64) error {
-	currentX, currentY, err := GetCursorPos()
+	currentX, currentY, err := getCursorPos()
 	if err != nil {
 		return err
 	}
@@ -56,13 +56,15 @@ func Click(left bool) error {
 		upEvent = MOUSEEVENTF_RIGHTUP
 	}
 
-	if err := mouseEvent(downEvent); err != nil {
-		return fmt.Errorf("failed to press mouse button: %w", err)
+	var hardwareErr error
+	emit := func(event uintptr) {
+		if hardwareErr == nil {
+			hardwareErr = mouseEvent(event)
+		}
 	}
 
-	if err := mouseEvent(upEvent); err != nil {
-		return fmt.Errorf("failed to release mouse button: %w", err)
-	}
+	emit(downEvent)
+	emit(upEvent)
 
-	return nil
+	return hardwareErr
 }

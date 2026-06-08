@@ -1,6 +1,8 @@
 package service
 
 import (
+	"fmt"
+
 	"github.com/itchyny/volume-go"
 )
 
@@ -9,7 +11,7 @@ const volumeStep = 2
 func AdjustVolume(increase bool) error {
 	vol, err := volume.GetVolume()
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to get current volume: %w", err)
 	}
 
 	adjustment := volumeStep
@@ -24,18 +26,29 @@ func AdjustVolume(increase bool) error {
 		newVol = 100
 	}
 
-	return volume.SetVolume(newVol)
+	if err := volume.SetVolume(newVol); err != nil {
+		return fmt.Errorf("failed to set new volume to %d: %w", newVol, err)
+	}
+
+	return nil
 }
 
 func ToggleMute() error {
 	mute, err := volume.GetMuted()
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to get current mute state: %w", err)
 	}
 
 	if mute {
-		return volume.Unmute()
+		if err := volume.Unmute(); err != nil {
+			return fmt.Errorf("failed to unmute volume: %w", err)
+		}
+		return nil
 	}
 
-	return volume.Mute()
+	if err := volume.Mute(); err != nil {
+		return fmt.Errorf("failed to mute volume: %w", err)
+	}
+
+	return nil
 }

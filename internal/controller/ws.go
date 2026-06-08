@@ -2,7 +2,7 @@ package controller
 
 import (
 	"encoding/json"
-	"fmt"
+	"log"
 	"net/http"
 	"remote/internal/service"
 
@@ -30,7 +30,7 @@ type Message struct {
 func Ws(c *gin.Context) {
 	conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
 	if err != nil {
-		fmt.Println(err)
+		log.Printf("failed to upgrade WebSocket: %v", err)
 		return
 	}
 	defer conn.Close()
@@ -38,26 +38,37 @@ func Ws(c *gin.Context) {
 	for {
 		_, data, err := conn.ReadMessage()
 		if err != nil {
-			fmt.Println(err)
+			log.Printf("websocket read error: %v", err)
 			return
 		}
+
 		var msg Message
 		if err := json.Unmarshal(data, &msg); err != nil {
-			fmt.Println(err)
+			log.Printf("failed to unmarshal WebSocket message: %v", err)
 			continue
 		}
 
 		switch msg.Action {
 		case "move-cursor":
-			_ = service.MoveCursor(msg.DeltaX, msg.DeltaY)
+			if err := service.MoveCursor(msg.DeltaX, msg.DeltaY); err != nil {
+				log.Printf("failed to move cursor: %v", err)
+			}
 		case "click":
-			_ = service.Click(msg.Side == "left")
+			if err := service.Click(msg.Side == "left"); err != nil {
+				log.Printf("failed mouse click: %v", err)
+			}
 		case "press-key":
-			_ = service.PressKey(msg.Text)
+			if err := service.PressKey(msg.Text); err != nil {
+				log.Printf("failed key press: %v", err)
+			}
 		case "volume":
-			_ = service.AdjustVolume(msg.Direction == "up")
+			if err := service.AdjustVolume(msg.Direction == "up"); err != nil {
+				log.Printf("failed to adjust volume: %v", err)
+			}
 		case "toggle-mute":
-			_ = service.ToggleMute()
+			if err := service.ToggleMute(); err != nil {
+				log.Printf("failed to toggle mute: %v", err)
+			}
 		}
 	}
 }

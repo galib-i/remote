@@ -5,7 +5,6 @@ import (
 	"os"
 	"strings"
 	"syscall"
-	"unsafe"
 )
 
 const keyLeftShift = 42
@@ -36,12 +35,9 @@ func initKbdDev() error {
 		uinputIoctl(f.Fd(), uiSetKeyBit, uintptr(i))
 	}
 
-	dev := uinputUserDev{}
-	copy(dev.Name[:], "Go Remote Keyboard")
-	dev.ID.Bustype, dev.ID.Vendor, dev.ID.Product, dev.ID.Version = 0x06, 0x1209, 0x5679, 1
-
-	f.Write((*[unsafe.Sizeof(dev)]byte)(unsafe.Pointer(&dev))[:])
-	uinputIoctl(f.Fd(), uiDevCreate, 0)
+	if err := registerUinputDevice(f, "Go-Remote Keyboard"); err != nil {
+		return err
+	}
 
 	kbdFile = f
 	return nil

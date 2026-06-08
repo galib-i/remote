@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"log"
 	"math/rand"
 	"net"
 )
@@ -18,6 +19,8 @@ func init() {
 
 	if ip, err := getLocalIP(); err == nil {
 		ServerURL = fmt.Sprintf("http://%s:%s", ip, ServerPort)
+	} else {
+		log.Printf("failed to determine local IP: %v", err)
 	}
 }
 

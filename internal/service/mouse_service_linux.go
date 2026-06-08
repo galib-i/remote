@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 	"syscall"
-	"unsafe"
 )
 
 const (
@@ -35,12 +34,9 @@ func initMouseDev() error {
 	uinputIoctl(f.Fd(), uiSetRelBit, relX)
 	uinputIoctl(f.Fd(), uiSetRelBit, relY)
 
-	dev := uinputUserDev{}
-	copy(dev.Name[:], "Go Remote Mouse")
-	dev.ID.Bustype, dev.ID.Vendor, dev.ID.Product, dev.ID.Version = 0x06, 0x1209, 0x5680, 1
-
-	f.Write((*[unsafe.Sizeof(dev)]byte)(unsafe.Pointer(&dev))[:])
-	uinputIoctl(f.Fd(), uiDevCreate, 0)
+	if err := registerUinputDevice(f, "Go-Remote Mouse"); err != nil {
+		return err
+	}
 
 	mouseFile = f
 	return nil
@@ -53,17 +49,24 @@ func MoveCursor(dx, dy float64) error {
 
 	x, y := int32(dx), int32(dy)
 
-	if x != 0 {
-		emitEvent(mouseFile, evRel, relX, x)
-	}
-	if y != 0 {
-		emitEvent(mouseFile, evRel, relY, y)
-	}
-	if x != 0 || y != 0 {
-		emitEvent(mouseFile, evSyn, 0, 0)
+	var hardwareErr error
+	emit := func(typ, code uint16, val int32) {
+		if hardwareErr == nil {
+			hardwareErr = emitEvent(mouseFile, typ, code, val)
+		}
 	}
 
-	return nil
+	if x != 0 {
+		emit(evRel, relX, x)
+	}
+	if y != 0 {
+		emit(evRel, relY, y)
+	}
+	if x != 0 || y != 0 {
+		emit(evSyn, 0, 0)
+	}
+
+	return hardwareErr
 }
 
 func Click(left bool) error {
@@ -76,10 +79,17 @@ func Click(left bool) error {
 		btn = btnLeft
 	}
 
-	emitEvent(mouseFile, evKey, btn, 1)
-	emitEvent(mouseFile, evSyn, 0, 0)
-	emitEvent(mouseFile, evKey, btn, 0)
-	emitEvent(mouseFile, evSyn, 0, 0)
+	var hardwareErr error
+	emit := func(typ, code uint16, val int32) {
+		if hardwareErr == nil {
+			hardwareErr = emitEvent(mouseFile, typ, code, val)
+		}
+	}
 
-	return nil
+	emit(evKey, btn, 1)
+	emit(evSyn, 0, 0)
+	emit(evKey, btn, 0)
+	emit(evSyn, 0, 0)
+
+	return hardwareErr
 }

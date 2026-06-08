@@ -6,9 +6,8 @@ import (
 )
 
 var (
-	callKeybd_event      = newWinAPIHelper("keybd_event")
-	callGetAsyncKeyState = newWinAPIHelper("GetAsyncKeyState")
-	procVkKeyScan        = user32.NewProc("VkKeyScanA")
+	callKeybd_event = newWinAPIHelper("keybd_event")
+	procVkKeyScan   = user32.NewProc("VkKeyScanA")
 )
 
 const (
@@ -39,7 +38,7 @@ func getVirtualKeyAndModifiers(key rune) (byte, byte, error) {
 
 func PressKey(key string) error {
 	if len(key) == 0 {
-		return fmt.Errorf("empty key")
+		return fmt.Errorf("cannot press empty key")
 	}
 
 	// Check for special keys first
@@ -61,42 +60,25 @@ func PressKey(key string) error {
 		return err
 	}
 
-	// Press shift if needed
-	if mod&SHIFT_MOD != 0 {
-		if err := keybdEvent(VK_SHIFT, 0); err != nil {
-			return fmt.Errorf("failed to press shift: %w", err)
+	var hardwareErr error
+	emit := func(vk byte, flags uintptr) {
+		if hardwareErr == nil {
+			hardwareErr = keybdEvent(vk, flags)
 		}
 	}
 
-	// Key down
-	if err := keybdEvent(virtualKey, 0); err != nil {
-		return fmt.Errorf("failed to press key down: %w", err)
+	// Press shift if needed
+	if mod&SHIFT_MOD != 0 {
+		emit(VK_SHIFT, 0)
 	}
-	// Key up
-	if err := keybdEvent(virtualKey, KEYEVENTF_KEYUP); err != nil {
-		return fmt.Errorf("failed to release key: %w", err)
-	}
+
+	emit(virtualKey, 0)               // Key down
+	emit(virtualKey, KEYEVENTF_KEYUP) // Key up
 
 	// Release modifiers
 	if mod&SHIFT_MOD != 0 {
-		if err := keybdEvent(VK_SHIFT, KEYEVENTF_KEYUP); err != nil {
-			return fmt.Errorf("failed to release shift: %w", err)
-		}
+		emit(VK_SHIFT, KEYEVENTF_KEYUP)
 	}
 
-	return nil
-}
-
-func IsKeyPressed(key string) (bool, error) {
-	virtualKey, _, err := getVirtualKeyAndModifiers([]rune(strings.ToLower(key))[0])
-	if err != nil {
-		return false, err
-	}
-
-	ret, _, err := callGetAsyncKeyState(uintptr(virtualKey))
-	if err != nil && err.Error() != "The operation completed successfully." {
-		return false, fmt.Errorf("failed to get key state: %w", err)
-	}
-
-	return (ret & 0x8000) != 0, nil
+	return hardwareErr
 }

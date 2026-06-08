@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"log"
 	"net/http"
 	"remote/internal/config"
 
@@ -17,7 +18,9 @@ func ShowQR(c *gin.Context) {
 	// Generate QR code as PNG bytes
 	qrCode, err := qrcode.Encode(config.ServerURL, qrcode.Medium, 256)
 	if err != nil {
+		log.Printf("failed to generate QR code: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate QR code"})
+	
 		return
 	}
 
