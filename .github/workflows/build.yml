@@ -18,7 +18,8 @@ jobs:
           GOOS=windows GOARCH=amd64 go build -ldflags="-s -w" -o dist/remote-server-windows.exe ./cmd/server
 
           cp start-remote.sh dist/
-          
+          cp start-remove.ps1 dist/
+
       - uses: actions/upload-artifact@v7
         with:
           name: remote-server-builds

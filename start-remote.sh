@@ -16,7 +16,7 @@ trap cleanup SIGINT SIGTERM SIGHUP
 echo "[Firewall] Opening port $PORT..."
 sudo ufw allow $PORT/tcp > /dev/null
 
-echo "[Server] Starting on port $PORT..."
+echo "[Go-Remote Server] Starting on port $PORT..."
 PORT=$PORT ./remote-server-linux
 
 ./remote-server-linux
