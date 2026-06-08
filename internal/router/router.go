@@ -7,7 +7,9 @@ import (
 )
 
 func Init() *gin.Engine {
-	r := gin.Default()
+	gin.SetMode(gin.ReleaseMode)
+	r := gin.New()
+	r.Use(gin.Recovery())
 
 	api := r.Group("/api")
 	{

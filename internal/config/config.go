@@ -3,8 +3,8 @@ package config
 import (
 	"fmt"
 	"log"
-	"math/rand"
 	"net"
+	"os"
 )
 
 var (
@@ -14,7 +14,11 @@ var (
 )
 
 func init() {
-	ServerPort = fmt.Sprintf("%d", rand.Intn(10000)+50000) // Random port between 50000-59999
+	ServerPort = os.Getenv("PORT")
+	if ServerPort == "" {
+		ServerPort = "8080"
+	}
+
 	ServerAddr = "0.0.0.0:" + ServerPort
 
 	if ip, err := getLocalIP(); err == nil {
