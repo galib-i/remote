@@ -17,6 +17,8 @@ jobs:
           GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o dist/remote-server-linux ./cmd/server
           GOOS=windows GOARCH=amd64 go build -ldflags="-s -w" -o dist/remote-server-windows.exe ./cmd/server
 
+          cp start-remote.sh dist/
+          
       - uses: actions/upload-artifact@v7
         with:
           name: remote-server-builds
