@@ -17,8 +17,8 @@ echo "[Firewall] Opening port $PORT..."
 sudo ufw allow $PORT/tcp > /dev/null
 
 echo "[Server] Starting on port $PORT..."
-PORT=$PORT ./remote-server
+PORT=$PORT ./remote-server-linux
 
-./remote-server
+./remote-server-linux
 
 cleanup

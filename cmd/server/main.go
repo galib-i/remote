@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"os/exec"
+	"remote"
 	"remote/internal/config"
 	"remote/internal/router"
 	"runtime"
@@ -25,7 +26,7 @@ func openBrowser(url string) {
 func main() {
 	log.SetFlags(log.Ltime)
 
-	r := router.Init()
+	r := router.Init(remote.FrontendFS)
 
 	go openBrowser("http://localhost:" + config.ServerPort + "/qr")
 
